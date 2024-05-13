@@ -1,0 +1,77 @@
+// npx prisma generate
+// npx prisma db push
+// npx prisma studio
+
+// To delete all DB
+// npx prisma migrate reset
+
+// For Stripe  webhook 
+// stripe listen --forward-to localhost:3000/api/webhook
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model RentDealership {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String
+  title               String
+  description         String
+  image               String
+  country             String
+  state               String
+  city                String
+  locationDescription String
+  trucks              Boolean  @default(false)
+  motorcycles         Boolean  @default(false)
+  usedCars            Boolean  @default(false)
+  newCars             Boolean  @default(false)
+  electricCars        Boolean  @default(false)
+  addedAt             DateTime @default(now())
+  updatedAt           DateTime @default(now())
+
+  cars     Car[]
+  bookings Booking[]
+}
+
+model Car {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  rentDealershipId String  @db.ObjectId
+  brand            String
+  model            String
+  description      String
+  year             Int     @default(2024)
+  mileage          Int     @default(0)
+  cruiseControl    Boolean @default(false)
+  selfDriving      Boolean @default(false)
+  Electric         Boolean @default(false)
+
+  RentDealership RentDealership @relation(fields: [rentDealershipId], references: [id], onDelete: Cascade)
+
+  booking Booking[]
+}
+
+model Booking {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userName         String
+  userEmail        String
+  userId           String
+  carId            String   @db.ObjectId
+  rentDealershipId String   @db.ObjectId
+  carOwnerId       String
+  startDate        DateTime
+  endDate          DateTime
+  currency         String
+  totalPrice       Int
+  paymentStatus    Boolean  @default(false)
+  paymentIntentId  String   @unique
+  bookedAt         DateTime @default(now())
+
+  RentDealership RentDealership @relation(fields: [rentDealershipId], references: [id])
+  Car            Car            @relation(fields: [carId], references: [id])
+}
