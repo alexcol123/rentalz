@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 
 import { type ThemeProviderProps } from "next-themes/dist/types"
 import { ThemeProvider } from "@/components/theme-provider";
+import Container from "@/components/Container";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,17 +27,20 @@ export default function RootLayout({
       <html lang="en">
 
         <body className={inter.className}>
-        <ThemeProvider
+          <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
 
-            <main className="flex flex-col min-h-screen bg-secondary">
+            <main className="flex flex-col min-h-screen ">
               <Navbar />
-              <section className="bg-primary-foreground flex-grow">
-                {children}
+              <section className="flex-grow">
+                <Container>
+                  {children}
+                </Container>
+
               </section>
             </main>
           </ThemeProvider>

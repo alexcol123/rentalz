@@ -22,7 +22,7 @@ const Navbar = () => {
   return (
 
 
-    <div className="sticky top-0 border bg-b-primary bg-secondary">
+    <div className="sticky top-0   border-b border-b-primary bg-muted/40  ">
       <Container >
 
         <div className="flex justify-between">
@@ -31,7 +31,7 @@ const Navbar = () => {
             onClick={() => router.push('/')}
             className="flex items-center  gap-1 cursor-pointer">
 
-            <div className="font-bold text-primary">R<span className="text-secondary-foreground">entalz</span></div>
+            <div className="font-bold text-primary tracking-wider  ">R<span className="text-secondary-foreground">entalz</span></div>
             <CarIcon className="text-primary" />
           </div>
 
@@ -40,8 +40,8 @@ const Navbar = () => {
 
           <SearchInput />
 
-          <div className="flex justify-center items-center gap-4">
-            <div>
+          <div className="flex justify-center items-center gap-4  ">
+            <div className="flex gap-8">
               <ThemeToggle />
               <NavMenu />
             </div>

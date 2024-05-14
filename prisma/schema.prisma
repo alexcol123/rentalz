@@ -17,8 +17,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model RentDealership {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+model Dealership {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
   userId              String
   title               String
   description         String
@@ -27,51 +27,48 @@ model RentDealership {
   state               String
   city                String
   locationDescription String
-  trucks              Boolean  @default(false)
-  motorcycles         Boolean  @default(false)
-  usedCars            Boolean  @default(false)
-  newCars             Boolean  @default(false)
-  electricCars        Boolean  @default(false)
-  addedAt             DateTime @default(now())
-  updatedAt           DateTime @default(now())
-
-  cars     Car[]
-  bookings Booking[]
+  trucks              Boolean   @default(false)
+  motorcycles         Boolean   @default(false)
+  usedCars            Boolean   @default(false)
+  newCars             Boolean   @default(false)
+  electricCars        Boolean   @default(false)
+  addedAt             DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+  cars                Car[]
+  bookings            Booking[]
 }
 
 model Car {
-  id               String  @id @default(auto()) @map("_id") @db.ObjectId
-  rentDealershipId String  @db.ObjectId
-  brand            String
-  model            String
-  description      String
-  year             Int     @default(2024)
-  mileage          Int     @default(0)
-  cruiseControl    Boolean @default(false)
-  selfDriving      Boolean @default(false)
-  Electric         Boolean @default(false)
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  dealershipId  String  @db.ObjectId
+  brand         String
+  model         String
+  description   String
+  year          Int     @default(2024)
+  mileage       Int     @default(0)
+  cruiseControl Boolean @default(false)
+  selfDriving   Boolean @default(false)
+  Electric      Boolean @default(false)
 
-  RentDealership RentDealership @relation(fields: [rentDealershipId], references: [id], onDelete: Cascade)
-
-  booking Booking[]
+  Dealership Dealership @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  booking    Booking[]
 }
 
 model Booking {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  userName         String
-  userEmail        String
-  userId           String
-  carId            String   @db.ObjectId
-  rentDealershipId String   @db.ObjectId
-  carOwnerId       String
-  startDate        DateTime
-  endDate          DateTime
-  currency         String
-  totalPrice       Int
-  paymentStatus    Boolean  @default(false)
-  paymentIntentId  String   @unique
-  bookedAt         DateTime @default(now())
-
-  RentDealership RentDealership @relation(fields: [rentDealershipId], references: [id])
-  Car            Car            @relation(fields: [carId], references: [id])
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  userName        String
+  userEmail       String
+  userId          String
+  carId           String     @db.ObjectId
+  dealershipId    String     @db.ObjectId
+  carOwnerId      String
+  startDate       DateTime
+  endDate         DateTime
+  currency        String
+  totalPrice      Int
+  paymentStatus   Boolean    @default(false)
+  paymentIntentId String     @unique
+  bookedAt        DateTime   @default(now())
+  Dealership      Dealership @relation(fields: [dealershipId], references: [id])
+  Car             Car        @relation(fields: [carId], references: [id])
 }
