@@ -22,7 +22,7 @@ const Navbar = () => {
   return (
 
 
-    <div className="sticky top-0   border-b border-b-primary bg-muted/40  ">
+    <div className="sticky top-0   border-b border-b-primary bg-accent ">
       <Container >
 
         <div className="flex justify-between">
