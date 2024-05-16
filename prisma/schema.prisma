@@ -40,17 +40,17 @@ model Dealership {
 
 model Image {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  customId     String?
-  name         String
-  size         Int
-  key          String
-  serverData   ServerData
-  url          String
+  name         String?
+  size         Int?
+  key          String?
+  serverData   serverData?
+  url          String?
+  
   Dealership   Dealership? @relation(fields: [dealershipId], references: [id])
   dealershipId String?     @db.ObjectId
 }
 
-type ServerData {
+type serverData {
   uploadedBy String
 }
 

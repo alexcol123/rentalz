@@ -1,6 +1,6 @@
 "use client"
 import axios from 'axios'
-import { any, custom, z } from "zod"
+import { any, custom, set, z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { UploadButton } from "@/components/uploadthing";
@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import Link from 'next/link'
+import { title } from 'process'
 
 type AddDealershipProps = {
   dealership: DealershipWithCars | null
@@ -55,8 +56,8 @@ type ImageProps = {
   serverData: {
     uploadedBy: string;
   };
-  size: number;
   type: string;
+  size: number;
   url: string;
 };
 
@@ -64,26 +65,25 @@ type ImageProps = {
 
 const formSchema = z.object({
 
+
+
   title: z.string().min(3, {
     message: 'title must be atlest 2 charactes long'
   }),
   description: z.string().min(3, {
     message: 'description must be atlest 2 charactes long'
   }),
-
-
   image: z.object({
-
-    key: z.string(),
-    name: z.string(),
+    name: z.string().min(1),
+    size: z.number().int(),
+    key: z.string().min(1),
     serverData: z.object({
-      uploadedBy: z.string()
+      uploadedBy: z.string().min(1),
     }),
-    size: z.number(),
-    type: z.string(),
-    url: z.string()
+    url: z.string().url(),
+    customId: z.union([z.string().nullable(), z.null()]),
+    type: z.string().min(1)
   }).array().nonempty(),
-
 
 
   country: z.string().min(1, {
@@ -109,7 +109,7 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
   const countries = getAllCountries()
 
   const { toast } = useToast()
-  const [images, setimages] = useState<ImageProps[] | undefined>()
+  const [images, setimages] = useState<ImageProps[] | undefined>(undefined)
 
 
 
@@ -137,14 +137,37 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
       usedCars: false,
       newCars: false,
       electricCars: false,
+
     },
   })
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
+
+    // console.log(values)
+    setisLoading(true)
+
+    axios.post('/api/dealership', values).then((res) => {
+      console.log(res)
+      setisLoading(false)
+      toast({
+        variant: 'success',
+        description: "🥳 Dealership Created",
+      })
+    })
+
+
+    // if (dealership) {
+    //   // update dealership
+    // } else {
+    //   //create hotel
+    //   const resp = await axios.post('/api/dealership', values)
+
+
+    //   // const resp =  axios.post('/api/dealership', values)
+
+    //   console.log(resp)
+    // }
   }
 
 
@@ -192,73 +215,11 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
 
     if (images === undefined || images === null) return
 
-
-
-    // console.log('images 2 ------------')
-    // console.log(images)
-
-    // console.log('Images in useeffect')
-
-
-    // type ImageProps = {
-    //   customId: string | undefined | null,
-    //   key: string;
-    //   name: string;
-    //   serverData: {
-    //     uploadedBy: string;
-    //   };
-    //   size: number;
-    //   type: string;
-    //   url: string;
-    // };
-    
-
-// console.log(images)
-
-/// NOTE === 
-
-// this fixes the issue -- but i sitll need to send all the images  not just on 
-// fix ==== >>
-// fix ==== >>
-// fix ==== >>
-// fix ==== >>
-// fix ==== >>
-
-
-
-let myImage = images[0]
-
-    form.setValue('image', [myImage], {
+    form.setValue('image', images as any, {
       shouldValidate: true,
       shouldDirty: true,
       shouldTouch: true
     })
-
-
-  //   const images = [
-  //     {
-  //         "name": "1.jpg",
-  //         "size": 55781,
-  //         "key": "1e04923f-14ea-41f5-bffa-df5f3cafc1e0-1d.jpg",
-  //         "serverData": {
-  //             "uploadedBy": "user_2gQ10QMtW0ywb7eHTQElKdVKY7d"
-  //         },
-  //         "url": "https://utfs.io/f/1e04923f-14ea-41f5-bffa-df5f3cafc1e0-1d.jpg",
-  //         "customId": null,
-  //         "type": "image/jpeg"
-  //     },
-  //     {
-  //         "name": "6.webp",
-  //         "size": 30918,
-  //         "key": "4339b386-b0b3-4c97-9095-78a2d49da766-1i.webp",
-  //         "serverData": {
-  //             "uploadedBy": "user_2gQ10QMtW0ywb7eHTQElKdVKY7d"
-  //         },
-  //         "url": "https://utfs.io/f/4339b386-b0b3-4c97-9095-78a2d49da766-1i.webp",
-  //         "customId": null,
-  //         "type": "image/webp"
-  //     }
-  // ]
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images])
@@ -509,13 +470,15 @@ let myImage = images[0]
                             endpoint="imageUploader"
                             onClientUploadComplete={(res) => {
                               // Do something with the response
-                              // console.log('Files: ================================================================================')
+                              console.log('Files: ================================================================================')
 
-                              // console.log(res[0])
+                              console.log(res[0])
 
-                              // console.log(res)
+                              console.log('---------------------------------')
 
-                              // console.log('Files End: ================================================================================')
+                              console.log(res)
+
+                              console.log('Files End: ================================================================================')
 
                               if (images === undefined) {
                                 setimages(res)
@@ -739,3 +702,4 @@ let myImage = images[0]
   )
 }
 export default AddDealershipForm
+
