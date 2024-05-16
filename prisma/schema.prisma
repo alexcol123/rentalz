@@ -22,7 +22,7 @@ model Dealership {
   userId              String
   title               String
   description         String
-  image               String[]
+  image               Image[]
   country             String
   state               String
   city                String
@@ -36,6 +36,22 @@ model Dealership {
   updatedAt           DateTime  @default(now())
   cars                Car[]
   bookings            Booking[]
+}
+
+model Image {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  customId     String?
+  name         String
+  size         Int
+  key          String
+  serverData   ServerData
+  url          String
+  Dealership   Dealership? @relation(fields: [dealershipId], references: [id])
+  dealershipId String?     @db.ObjectId
+}
+
+type ServerData {
+  uploadedBy String
 }
 
 model Car {

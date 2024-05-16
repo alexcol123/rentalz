@@ -1,11 +1,11 @@
 "use client"
 import axios from 'axios'
-import { z } from "zod"
+import { any, custom, z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { UploadButton } from "@/components/uploadthing";
-import { Car, Dealership } from "@prisma/client"
-import { useState } from "react";
+import { Car, Dealership, Image as ImageTypeProps } from "@prisma/client"
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,7 +23,21 @@ import { Checkbox } from "../ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { UploadThingError } from "uploadthing/server";
 import Image from "next/image";
-import { Delete, Loader2, Trash, Trash2 } from "lucide-react";
+import { Delete, Loader2, PencilLine, Plus, Trash, Trash2 } from "lucide-react";
+import useLocation from '@/hooks/useLocation'
+import { ICity, IState } from 'country-state-city'
+
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import Link from 'next/link'
 
 type AddDealershipProps = {
   dealership: DealershipWithCars | null
@@ -34,6 +48,20 @@ export type DealershipWithCars = Dealership & {
 }
 
 
+type ImageProps = {
+  customId: string | undefined | null,
+  key: string;
+  name: string;
+  serverData: {
+    uploadedBy: string;
+  };
+  size: number;
+  type: string;
+  url: string;
+};
+
+
+
 const formSchema = z.object({
 
   title: z.string().min(3, {
@@ -42,9 +70,22 @@ const formSchema = z.object({
   description: z.string().min(3, {
     message: 'description must be atlest 2 charactes long'
   }),
-  image: z.string().min(1, {
-    message: 'image is required'
-  }),
+
+
+  image: z.object({
+
+    key: z.string(),
+    name: z.string(),
+    serverData: z.object({
+      uploadedBy: z.string()
+    }),
+    size: z.number(),
+    type: z.string(),
+    url: z.string()
+  }).array().nonempty(),
+
+
+
   country: z.string().min(1, {
     message: 'country is required'
   }),
@@ -61,35 +102,32 @@ const formSchema = z.object({
 })
 
 
-type ServerData = {
-  uploadedBy: string;
-};
-
-type Image = {
-  name: string;
-  size: number;
-  key: string;
-  serverData: ServerData;
-  url: string;
-  // Add other properties if necessary
-};
-
 const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
 
+  const { getAllCountries, getCountyStates, getStateCities } = useLocation()
+
+  const countries = getAllCountries()
+
   const { toast } = useToast()
-  const [images, setimages] = useState<Image[] | undefined>(undefined)
+  const [images, setimages] = useState<ImageProps[] | undefined>()
+
+
+
   const [imageIsDeleting, setimageIsDeleting] = useState(false)
 
-  console.log('images')
-  console.log(images)
-  console.log('end images ===================')
+  const [states, setstates] = useState<IState[]>([])
+  const [cities, setcities] = useState<ICity[]>([])
+  const [isLoading, setisLoading] = useState(false)
+
+
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: dealership || {
       title: '',
       description: '',
-      image: '',
+      image: undefined,
       country: '',
       state: '',
       city: '',
@@ -106,13 +144,11 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-
-    console.log('fuck off')
     console.log(values)
   }
 
 
-  const handleImageDelete = async (image: Image) => {
+  const handleImageDelete = async (image: ImageProps) => {
     console.log(image)
     setimageIsDeleting(true)
 
@@ -152,7 +188,105 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
 
   }
 
+  useEffect(() => {
 
+    if (images === undefined || images === null) return
+
+
+
+    // console.log('images 2 ------------')
+    // console.log(images)
+
+    // console.log('Images in useeffect')
+
+
+    // type ImageProps = {
+    //   customId: string | undefined | null,
+    //   key: string;
+    //   name: string;
+    //   serverData: {
+    //     uploadedBy: string;
+    //   };
+    //   size: number;
+    //   type: string;
+    //   url: string;
+    // };
+    
+
+// console.log(images)
+
+/// NOTE === 
+
+// this fixes the issue -- but i sitll need to send all the images  not just on 
+// fix ==== >>
+// fix ==== >>
+// fix ==== >>
+// fix ==== >>
+// fix ==== >>
+
+
+
+let myImage = images[0]
+
+    form.setValue('image', [myImage], {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true
+    })
+
+
+  //   const images = [
+  //     {
+  //         "name": "1.jpg",
+  //         "size": 55781,
+  //         "key": "1e04923f-14ea-41f5-bffa-df5f3cafc1e0-1d.jpg",
+  //         "serverData": {
+  //             "uploadedBy": "user_2gQ10QMtW0ywb7eHTQElKdVKY7d"
+  //         },
+  //         "url": "https://utfs.io/f/1e04923f-14ea-41f5-bffa-df5f3cafc1e0-1d.jpg",
+  //         "customId": null,
+  //         "type": "image/jpeg"
+  //     },
+  //     {
+  //         "name": "6.webp",
+  //         "size": 30918,
+  //         "key": "4339b386-b0b3-4c97-9095-78a2d49da766-1i.webp",
+  //         "serverData": {
+  //             "uploadedBy": "user_2gQ10QMtW0ywb7eHTQElKdVKY7d"
+  //         },
+  //         "url": "https://utfs.io/f/4339b386-b0b3-4c97-9095-78a2d49da766-1i.webp",
+  //         "customId": null,
+  //         "type": "image/webp"
+  //     }
+  // ]
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images])
+
+
+  useEffect(() => {
+    const selectedCountry = form.watch('country')
+    const countryStates = getCountyStates(selectedCountry)
+
+    if (countryStates) {
+      setstates(countryStates)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch('country')])
+
+  useEffect(() => {
+    const selectedCountry = form.watch('country')
+    const selectedState = form.watch('state')
+
+    const stateCities = getStateCities(selectedCountry, selectedState)
+
+    if (stateCities) {
+      setcities(stateCities)
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch('country'), form.watch('state')])
 
 
 
@@ -375,14 +509,18 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
                             endpoint="imageUploader"
                             onClientUploadComplete={(res) => {
                               // Do something with the response
-                              console.log('Files: ', res)
+                              // console.log('Files: ================================================================================')
+
+                              // console.log(res[0])
 
                               // console.log(res)
+
+                              // console.log('Files End: ================================================================================')
 
                               if (images === undefined) {
                                 setimages(res)
                               } else {
-                                setimages([...images, ...res])
+                                setimages([images, ...res])
                               }
 
 
@@ -422,7 +560,174 @@ const AddDealershipForm = ({ dealership }: AddDealershipProps) => {
 
 
             <div className="flex-1 flex flex-col gap-6">
-              PART 2</div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Country</FormLabel>
+
+                      <FormDescription>
+                        In wich country is your dealership located
+                      </FormDescription>
+
+                      <Select
+                        disabled={isLoading}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a Country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+
+                          {countries.map((country) => {
+
+                            return <SelectItem key={country.isoCode} value={country.isoCode}>
+                              {country.name} {country.flag}
+                            </SelectItem>
+                          })}
+
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select State</FormLabel>
+
+                      <FormDescription>
+                        In wich state is your dealership located
+                      </FormDescription>
+
+                      <Select
+                        disabled={isLoading || !states.length}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a State" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+
+                          {states.map((state) => {
+
+                            return <SelectItem key={state.isoCode} value={state.isoCode}>
+                              {state.name}
+                            </SelectItem>
+                          })}
+
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select City</FormLabel>
+
+                      <FormDescription>
+                        In wich city is your dealership located
+                      </FormDescription>
+
+                      <Select
+                        disabled={isLoading || !cities.length}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a City" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+
+                          {cities.map((city) => {
+
+                            return <SelectItem key={city.name} value={city.name}>
+                              {city.name}
+                            </SelectItem>
+                          })}
+
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+              </div>
+
+
+              <FormField
+                control={form.control}
+                name="locationDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location  Description :</FormLabel>
+
+                    <FormDescription>
+                      Provide a brief description of your  dealership location via the highway or main roads.
+                    </FormDescription>
+
+                    <FormControl>
+                      <Textarea placeholder="Located near exit 85 of Interstate 95 in Paramus, New Jersey,  Its  on the Left of the HomeDepot store" {...field} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+
+              <div className="flex justify-between gap-2 flex-wrap ">
+                {dealership
+                  ? <>
+                    <Button disabled={isLoading}>
+                      {isLoading ? <><Loader2 className='mr-2' /> Updating</> : <><PencilLine className='mr-2' /> Update Dealership</>}
+                    </Button>
+                  </>
+                  : <>
+                    <Button>
+                      {isLoading ? <><Loader2 className='mr-2' /> Creating</> : <><Plus className='mr-2' /> Create Dealership</>}
+                    </Button>
+                  </>
+
+                }
+              </div>
+
+            </div>
 
           </div>
 
