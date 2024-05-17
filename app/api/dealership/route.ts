@@ -1,6 +1,7 @@
 import prismadb from "@/lib/prismadb"
 
 import { auth } from "@clerk/nextjs/server";
+import { create } from "domain";
 import { Key } from "lucide-react";
 import { NextResponse } from "next/server"
 
@@ -11,9 +12,12 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { userId } = auth()
 
+    const myImage = body.image[0]
+    delete myImage.customId
 
-    //     console.log(body)
-delete body.image
+    console.log(myImage)
+    console.log('body my image ======================================')
+    delete body.image
 
     // return
 
@@ -25,16 +29,40 @@ delete body.image
       data: {
         // remove image from body
         ...body,
-        userId
-
-        // ...body,
-        // userId,
+        userId,
+        //  how can i add all the images in the array to the image table
         // image: {
         //   create: {
-        //     data: body.image[0]
+        //     ...myImage
         //   }
+        // }
+
+        // image: {
+        //   create: [
+        //     { ...myImage }
+        //   ]
+        // }
+        image: {
+          create: {
+            ...myImage
+          }
+
+
+        }
+
+
+        // image: {
+        //   create:
+        //     [myImage]
+        // }
+        // image: {
+        //   create: [
+        //     { ...body.image[0] }
+        //   ]
+
 
         // }
+
       }
     })
 

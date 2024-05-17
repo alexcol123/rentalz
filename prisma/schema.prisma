@@ -36,6 +36,7 @@ model Dealership {
   updatedAt           DateTime  @default(now())
   cars                Car[]
   bookings            Booking[]
+  imageId             String?   @db.ObjectId
 }
 
 model Image {
@@ -45,7 +46,8 @@ model Image {
   key          String?
   serverData   serverData?
   url          String?
-  
+  type         String?
+  customId     String?
   Dealership   Dealership? @relation(fields: [dealershipId], references: [id])
   dealershipId String?     @db.ObjectId
 }
