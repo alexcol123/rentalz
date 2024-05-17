@@ -12,63 +12,21 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { userId } = auth()
 
-    const myImage = body.image[0]
-    delete myImage.customId
-
-    console.log(myImage)
-    console.log('body my image ======================================')
-    delete body.image
-
-    // return
-
     if (!userId) {
       return new NextResponse("Unautorized", { status: 401 })
     }
 
     const dealership = await prismadb.dealership.create({
       data: {
-        // remove image from body
         ...body,
         userId,
-        //  how can i add all the images in the array to the image table
-        // image: {
-        //   create: {
-        //     ...myImage
-        //   }
-        // }
-
-        // image: {
-        //   create: [
-        //     { ...myImage }
-        //   ]
-        // }
+        // Create images in image model
         image: {
-          create: {
-            ...myImage
-          }
-
-
+          create:
+            [...body.image]
         }
-
-
-        // image: {
-        //   create:
-        //     [myImage]
-        // }
-        // image: {
-        //   create: [
-        //     { ...body.image[0] }
-        //   ]
-
-
-        // }
-
       }
     })
-
-
-
-    console.log('end======================================================================================================================')
 
     return NextResponse.json(dealership)
 
